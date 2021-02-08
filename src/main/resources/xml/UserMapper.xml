@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+					"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.springbootmybatis2.mapper.UserMapper">
+	<cache/>
+	<!-- <cache-ref namespace="tk.mybatis.simple.mapper.RoleMapper"/> -->
+	<resultMap id="userMap" type="com.example.springbootmybatis2.model.SysUser">
+		<id property="id" column="id"/>
+		<result property="userName" column="user_name"/>
+		<result property="userPassword" column="user_password"/>
+		<result property="userEmail" column="user_email"/>
+		<result property="userInfo" column="user_info"/>
+		<result property="headImg" column="head_img" jdbcType="BLOB"/>
+		<result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+	</resultMap>
+	
+<!--	<resultMap id="userRoleMap" extends="userMap" type="com.example.springbootmybatis2.model.SysUser">-->
+<!--		<association property="role" columnPrefix="role_" resultMap="tk.mybatis.simple.mapper.RoleMapper.roleMap"/>-->
+<!--	</resultMap>-->
+	
+	<resultMap id="userRoleMapSelect" extends="userMap" type="com.example.springbootmybatis2.model.SysUser">
+		<association property="role" 
+					 fetchType="lazy"
+					 select="tk.mybatis.simple.mapper.RoleMapper.selectRoleById" 
+					 column="{id=role_id}"/>
+	</resultMap>
+	
+	<!-- 
+	<resultMap id="userRoleListMap" extends="userMap" type="com.example.springbootmybatis2.model.SysUser">
+		<id property="id" column="id"/>
+		<result property="userName" column="user_name"/>
+		<result property="userPassword" column="user_password"/>
+		<result property="userEmail" column="user_email"/>
+		<result property="userInfo" column="user_info"/>
+		<result property="headImg" column="head_img" jdbcType="BLOB"/>
+		<result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+		<collection property="roleList" columnPrefix="role_" javaType="com.example.springbootmybatis2.model.SysRole">
+			<id property="id" column="id"/>
+			<result property="roleName" column="role_name"/>
+			<result property="enabled" column="enabled"/>
+			<result property="createBy" column="create_by"/>
+			<result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+		</collection>
+	</resultMap>
+	 -->
+	 
+<!--	<resultMap id="userRoleListMap" extends="userMap" type="com.example.springbootmybatis2.model.SysUser">-->
+<!--		<collection property="roleList" columnPrefix="role_" -->
+<!--					resultMap="tk.mybatis.simple.mapper.RoleMapper.rolePrivilegeListMap"/>-->
+<!--	</resultMap>-->
+	 
+	<resultMap id="userRoleListMapSelect" extends="userMap" type="com.example.springbootmybatis2.model.SysUser">
+		<collection property="roleList"
+					fetchType="lazy"
+					select="tk.mybatis.simple.mapper.RoleMapper.selectRoleByUserId"
+					column="{userId=id}"/>
+	</resultMap>
+	 
+
+	
+	<select id="selectAll" resultType="com.example.springbootmybatis2.model.SysUser">
+	    select id, 
+	    	user_name userName, 
+	        user_password userPassword,
+	        user_email userEmail,
+	        user_info userInfo,
+	        head_img headImg,
+	        create_time createTime
+	    from sys_user
+	</select>
+
+	<select id="selectRolesByUserId" resultType="com.example.springbootmybatis2.model.SysRole">
+	    select
+			r.id,
+			r.role_name roleName,
+			r.enabled,
+			r.create_by createBy,
+			r.create_time createTime,
+			u.user_name as "user.userName",
+			u.user_email as "user.userEmail"
+		from sys_user u
+		inner join sys_user_role ur on u.id = ur.user_id
+		inner join sys_role r on ur.role_id = r.id
+	    where u.id = #{userId}
+	</select>
+
+
+	<insert id="insert2" useGeneratedKeys="true" keyProperty="id" flushCache="false"
+			timeout="2" statementType="PREPARED" parameterType="com.example.springbootmybatis2.model.SysUser">
+		insert into sys_user(
+		user_name, user_password,
+		<if test="userEmail != null">
+			<if test="userEmail != ''">
+				user_email,
+			</if>
+		</if>
+		user_info, head_img, create_time)
+		values(
+		#{userName}, #{userPassword},
+		<if test="userEmail != null">
+			<if test="userEmail != ''">
+				#{userEmail},
+			</if>
+		</if>
+		#{userInfo}, #{headImg, jdbcType=BLOB}, #{createTime, jdbcType=TIMESTAMP})
+	</insert>
+
+	<insert id="insert3"  parameterType="com.example.springbootmybatis2.model.SysUser">
+		insert into sys_user(
+		user_name, user_password,
+		<if test="userEmail != null">
+			<if test="userEmail != ''">
+				user_email,
+			</if>
+		</if>
+		user_info, head_img, create_time)
+		values(
+		#{userName}, #{userPassword},
+		<if test="userEmail != null">
+			<if test="userEmail != ''">
+				#{userEmail},
+			</if>
+		</if>
+		#{userInfo}, #{headImg, jdbcType=BLOB}, #{createTime, jdbcType=TIMESTAMP})
+
+		<selectKey keyColumn="id" resultType="long" keyProperty="id" order="AFTER">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+
+	</insert>
+
+	<update id="update1" parameterType="com.example.springbootmybatis2.model.SysUser" timeout="2"
+		flushCache="false" >
+		update sys_user
+		set user_name = #{userName}
+		where id = #{id}
+	</update>
+
+
+	<select id="selectRolesByUserAndRole" resultType="com.example.springbootmybatis2.model.SysRole">
+	    select
+			r.id,
+			r.role_name roleName,
+			r.enabled,
+			r.create_by createBy,
+			r.create_time createTime
+		from sys_user u
+		inner join sys_user_role ur on u.id = ur.user_id
+		inner join sys_role r on ur.role_id = r.id
+	    where u.id = #{user1.id} and r.enabled = #{role1.enabled}
+	</select>
+
+	<!--
+	需求：{现在进行如下查询：当 参数 id 有值 的时候优 先使id 查询，
+	当 id 没有值时就去判断用户名是否有值，如果有值就用用户名 查询 ，如果用 户名
+	也没有值，就使 查询无结果。}
+	如何实现if else 。 if .. else ..的逻辑。
+	使用choose：注意
+	1，choose 至少有一个when，可以没有otherwhise
+	2，    where 1 = 1 注意添加，当所有choose 条件条件不满足时 where 1=1，sql正确。
+	3，otherwise添加 limit 0或者
+	and 1 = 2 。当所有choose 条件不满足时就 不查出结果。
+	如果不添加otherwhise 会出现查出所有结果
+	-->
+
+</mapper>

@@ -13,4 +13,8 @@ e)github上传.
 2,Mybatis xml使用方式 
 a)springboot测试代码 测试. 日志sql输出配置.
 b)mybatis resultMap 配置和使用
+c) resultType配置和使用。列名涉及多个表对象的值返回如何返回？？返回值为枚举时候？？
+d）insert标签使用
+e）update标签使用。
+f）select 传多个参数的方式？？
 
