@@ -18,3 +18,10 @@ d）insert标签使用
 e）update标签使用。
 f）select 传多个参数的方式？？
 
+
+
+3,mybatis 注解的使用方式
+insert
+update
+delete使用。
+

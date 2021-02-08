@@ -105,7 +105,7 @@ class SpringbootMybatis2ApplicationTests {
 	 *  review for working
 	  * select 传多个参数的方式
 	 * @author Charles
-	 * @date 2021/2/8 16:37
+	 * @date 2021/2/8 16:46
 	 * @return void
 	 */
 	@Test
@@ -117,7 +117,79 @@ class SpringbootMybatis2ApplicationTests {
 		List<SysRole > sysRoles= userMapper.selectRolesByUserAndRole(sysUser,sysRole);
 		System.out.println(sysRoles.size());
 	}
+	/***
+	 *  review for working
+	  * mybatis 注解的使用方式
+	 * @author Charles
+	 * @date 2021/2/8 16:56
+	 * @return void
+	 */
+    @Test
+	void test11(){
+		List<SysUser> sysUsers = userMapper.selectAll2();
+		System.out.println(sysUsers.size());
 
+	}
+	//mybatis 注解的使用方式
+	@Test
+	void test12(){
+		List<SysUser> sysUsers=userMapper.selectAll3();
+		System.out.println(sysUsers.size());
+
+
+	}
+
+	/**
+	 * mybatis 注解的使用方式
+	 */
+	@Test
+	void test13(){
+		List<SysUser> sysUsers=userMapper.selectAll4();
+		System.out.println(sysUsers.size());
+	}
+	@Test
+	void test14(){
+		SysUser sysUser = new SysUser();
+		sysUser.setUserName("test14");
+		sysUser.setUserPassword(MD5Encoder.encode(new byte[]{1,2,3,4,5,6}));
+		sysUser.setUserEmail("test14@qq.com");
+		sysUser.setUserInfo("test14");
+		sysUser.setHeadImg(new byte[]{1,2,3,4});
+		sysUser.setCreateTime(new Date());
+		int n=userMapper.insert22(sysUser);
+		System.out.println(n);
+		System.out.println(sysUser.getId());
+	}
+	/***
+	 *  review for working
+	  * 返回非自增主键。mysql里面这相当于回查。
+	 * @author Charles
+	 * @date 2021/2/8 17:25
+	 * @return void
+	 */
+	@Test
+	void test15(){
+		SysUser sysUser = new SysUser();
+		sysUser.setUserName("test15");
+		sysUser.setUserPassword(MD5Encoder.encode(new byte[]{1,2,3,4,5,6}));
+		sysUser.setUserEmail("test14@qq.com");
+		sysUser.setUserInfo("test15");
+		sysUser.setHeadImg(new byte[]{1,2,3,4});
+		sysUser.setCreateTime(new Date());
+		int n=userMapper.insert23(sysUser);
+		System.out.println(n);
+		System.out.println(sysUser.getId());
+	}
+
+	@Test
+	void test16(){
+		SysUser sysUser  = new SysUser();
+		sysUser.setUserName("change2");
+		sysUser.setId(1040L);
+		int n =userMapper.update12(sysUser);
+		System.out.println(n);
+		System.out.println(sysUser.getUserName());
+	}
 
 
 }
