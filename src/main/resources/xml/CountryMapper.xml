@@ -1,7 +1,15 @@
-<!--<?xml version="1.0" encoding="UTF-8"?>-->
-<!--<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">-->
-<!--<mapper namespace="com.example.springbootmybatis.mapper.CountryMapper">-->
-<!--	<select id="selectAll" resultType="Country">-->
-<!--		select id,countryname,countrycode from country-->
-<!--	</select>-->
-<!--</mapper>-->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.springbootmybatis2.mapper.CountryMapper">
+	<resultMap id="Country" type="com.example.springbootmybatis2.model.Country">
+		<id property="id" column="id" jdbcType="TINYINT"/>
+		<result property="countryname" column="countryname" jdbcType="VARCHAR"/>
+		<result property="countrycode" column="countrycode" jdbcType="VARCHAR"/>
+
+	</resultMap>
+
+
+	<select id="selectAll" resultType="Country">
+		select id,countryname,countrycode from country
+	</select>
+</mapper>

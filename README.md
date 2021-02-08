@@ -10,4 +10,7 @@ e)github上传.
 
 
 
-2,
+2,Mybatis xml使用方式 
+a)springboot测试代码 测试. 日志sql输出配置.
+b)mybatis resultMap 配置和使用
+
