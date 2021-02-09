@@ -25,3 +25,9 @@ insert
 update
 delete使用。
 
+4 Mybatis Provider的使用方式.
+
+5, 动态sql书写。
+
+
+

@@ -77,4 +77,43 @@ public interface UserMapper {
 			"  where id = #{id}"})
 	int update12(SysUser sysUser);
 
+
+
+	/**
+	 * 根据动态条件查询用户信息
+	 *
+	 * @param sysUser
+	 * @return
+	 */
+	List<SysUser> selectByUser(SysUser sysUser);
+
+
+	int updateByUser(SysUser sysUser);
+
+	/***
+	 *  review for working
+	  * 动态条件 ：当 参数 id 有值 的时候优 先使id 查询，
+	 * 当 id 没有值时就去判断用户名是否有值，如果有值就用用户名 查询 ，如果用 户名
+	 * 也没有值，就使 查询无结果。
+	 * @author Charles
+	 * @date 2021/2/9 10:24
+	 * @return java.util.List<com.example.springbootmybatis2.model.SysUser>
+	 */
+	List<SysUser> selectByIdOrUserName(SysUser sysUser);
+
+	int insert5(SysUser sysUser);
+
+	/**
+	 * 根据用户 id 集合查询
+	 *
+	 * @param idList
+	 * @return
+	 */
+	List<SysUser> selectByIdList(int[] idList);
+	List<SysUser> selectByIdList2(List<Integer> idList);
+
+	int insertList(List<SysUser> sysUsers);
+
+	List<SysUser> selectByUser2(SysUser sysUser);
+
 }

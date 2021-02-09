@@ -2,6 +2,7 @@ package com.example.springbootmybatis2;
 
 import com.example.springbootmybatis2.mapper.CountryMapper;
 import com.example.springbootmybatis2.mapper.UserMapper;
+import com.example.springbootmybatis2.mapper.UserMapper2;
 import com.example.springbootmybatis2.model.SysRole;
 import com.example.springbootmybatis2.model.SysUser;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -13,8 +14,7 @@ import org.springframework.util.Assert;
 import sun.security.provider.MD5;
 
 import javax.annotation.Resource;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @SpringBootTest
 class SpringbootMybatis2ApplicationTests {
@@ -22,6 +22,8 @@ class SpringbootMybatis2ApplicationTests {
 	CountryMapper countryMapper;
 	@Resource
 	UserMapper userMapper;
+	@Resource
+	UserMapper2 userMapper2;
 
 	private static SqlSessionFactory sqlSessionFactory;
 
@@ -190,6 +192,141 @@ class SpringbootMybatis2ApplicationTests {
 		System.out.println(n);
 		System.out.println(sysUser.getUserName());
 	}
+
+
+	/**
+	 * 测试 Provider的用法
+	 */
+	@Test
+	void test21(){
+		List<SysRole> sysRoleList = userMapper2.selectRolesByUserId(1L);
+		System.out.println(sysRoleList.size());
+
+	}
+
+	@Test
+	void test22(){
+		SysUser sysUser = new SysUser();
+		sysUser.setUserName("test22");
+		sysUser.setUserPassword(MD5Encoder.encode(new byte[]{1,2,3,4,5,6}));
+		sysUser.setUserEmail("test@qq.com");
+		sysUser.setUserInfo("test22");
+		sysUser.setHeadImg(new byte[]{1,2,3,4});
+		sysUser.setCreateTime(new Date());
+		int nn =userMapper2.insert2(sysUser);
+		System.out.println(nn);
+		System.out.println(sysUser.getId());
+	}
+
+	@Test
+	void test23(){
+		SysUser sysUser = new SysUser();
+		sysUser.setUserName("test23");
+		sysUser.setUserPassword(MD5Encoder.encode(new byte[]{1,2,3,4,5,6}));
+		sysUser.setUserEmail("test@qq.com");
+		sysUser.setUserInfo("test22");
+		sysUser.setHeadImg(new byte[]{1,2,3,4});
+		sysUser.setCreateTime(new Date());
+		int nn =userMapper2.insert3(sysUser);
+		System.out.println(nn);
+		System.out.println(sysUser.getId());
+	}
+	/***
+	 *  review for working
+	  * 动态sql查询
+	 * @author Charles
+	 * @date 2021/2/9 10:04
+	 * @return void
+	 */
+	@Test
+	void test31(){
+		SysUser sysUser1 = new SysUser();
+		sysUser1.setUserName("test4");
+
+		userMapper.selectByUser(sysUser1);
+	}
+
+@Test
+	void test32(){
+		SysUser sysUser =new SysUser();
+		sysUser.setId(1036L);
+		sysUser.setUserName("change32");
+		sysUser.setUserEmail("change32@163.com");
+		userMapper.updateByUser(sysUser);
+	}
+@Test
+	void test33(){
+		SysUser sysUser = new SysUser();
+//		sysUser.setId(1036L);
+//		sysUser.setUserName("change32");
+		List<SysUser> sysUsers =userMapper.selectByIdOrUserName(sysUser);
+		System.out.println(sysUsers.size());
+	}
+
+	/**
+	 * 动态sql insert
+	 */
+	@Test
+	void  test34(){
+		SysUser sysUser  = new SysUser();
+		sysUser.setUserName("test34");
+//		sysUser.setUserPassword(MD5Encoder.encode(new byte[]{1,2,3,4,5,6}));
+//		sysUser.setUserEmail("test34@qq.com");
+		sysUser.setUserInfo("test34");
+		sysUser.setHeadImg(new byte[]{1,2,3,4});
+		sysUser.setCreateTime(new Date());
+		int  n =userMapper.insert5(sysUser);
+		System.out.println(n);
+		System.out.println(sysUser.getId());
+	}
+
+	/**
+	 * 动态sql  foreach
+	 */
+	@Test
+	void test35(){
+		int[] ids = new int[]{1,2,3};
+		List<SysUser> sysUsers = userMapper.selectByIdList(ids);
+		System.out.println(sysUsers.size());
+
+
+	}
+	@Test
+	void test36(){
+		List<Integer> ids = Arrays.asList(1,2,3);
+		List<SysUser> sysUsers = userMapper.selectByIdList2(ids);
+		System.out.println(sysUsers.size());
+	}
+	@Test
+	void test37(){
+		SysUser sysUser  = new SysUser();
+		sysUser.setUserName("test34");
+		sysUser.setUserPassword(MD5Encoder.encode(new byte[]{1,2,3,4,5,6}));
+		sysUser.setUserEmail("test34@qq.com");
+		sysUser.setUserInfo("test34");
+		sysUser.setHeadImg(new byte[]{1,2,3,4});
+		sysUser.setCreateTime(new Date());
+		SysUser sysUser2  = new SysUser();
+		sysUser2.setUserName("test34");
+		sysUser2.setUserPassword(MD5Encoder.encode(new byte[]{1,2,3,4,5,6}));
+		sysUser2.setUserEmail("test34@qq.com");
+		sysUser2.setUserInfo("test34");
+		sysUser2.setHeadImg(new byte[]{1,2,3,4});
+		sysUser2.setCreateTime(new Date());
+		List<SysUser> sysUserList = new ArrayList<>();
+				Collections.addAll(sysUserList,sysUser,sysUser2);
+		int n =userMapper.insertList(sysUserList);
+		System.out.println(n);
+		System.out.println(sysUserList.get(0).getId());
+	}
+@Test
+	void test38(){
+		SysUser sysUser = new SysUser();
+		sysUser.setUserName("test34");
+		List<SysUser> sysUserList =userMapper.selectByUser2(sysUser);
+		System.out.println(sysUserList.size());
+	}
+
 
 
 }
