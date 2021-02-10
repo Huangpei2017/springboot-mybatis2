@@ -1,11 +1,13 @@
 package com.example.springbootmybatis2.mapper;
 
 
+import com.example.springbootmybatis2.model.SysPrivilege;
 import com.example.springbootmybatis2.model.SysRole;
 import com.example.springbootmybatis2.model.SysUser;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface UserMapper {
@@ -149,5 +151,30 @@ public interface UserMapper {
 	 */
 	List<SysUser> selectAllUserAndRoles2();
 
+	/**
+	 * 使用resultMap 实现一对多 再对多 的三重映射结果集查询。 延迟加载实现。
+	 * begin-----------------------------------
+	 * @return
+	 */
+	List<SysUser> selectAllUserAndRoles3();
+	List<SysRole> selectRoleListByUserId(Long userId);
+	List<SysPrivilege> selectPrivilegeListByRoleId(Long roleId);
+	/**
+	 * end------------------------------------
+	 */
+	/**
+	 * 根据 延迟加载， enable值 有效则延迟加载，否则 不延迟加载。
+	 * @param userId
+	 * @return
+	 */
+	List<SysRole> selectRoleListByUserId2(Long userId);
+
+	/**
+	 * 存储过程调用
+	 * @param sysUser
+	 */
+	void selectUserInfoById(SysUser sysUser);
+
+	List<SysUser>  selectUserPage(Map<String,Object> paramMap);
 
 }

@@ -35,5 +35,6 @@ b，resultMap实现
 c，resultMap 延迟加载实现。
 7，mybatis 一对多关系查询实现
 
+8，存储过程。
 
 

@@ -390,8 +390,57 @@ class SpringbootMybatis2ApplicationTests {
 		List<SysPrivilege> sysPrivilegeList = sysRoleList.get(1).getPrivilegeList();
 		System.out.println(sysPrivilegeList.size());
 	}
+	/**
+	 * 使用resultMap 实现一对多 再对多 的三重映射结果集查询。 然后是延迟加载实现
+	 */
+@Test
+	void test46(){
+		List<SysUser> sysUserList= userMapper.selectAllUserAndRoles3();
+		System.out.println("sysUserList size="+sysUserList.size());
+		SysUser sysUser0 = sysUserList.get(0);
+		List<SysRole> roleList =sysUser0.getRoleList();
+		System.out.println("username:"+sysUser0.getUserName()+"|| roleList size="+ sysUser0.getRoleList().size());
+		SysRole sysRole0 = roleList.get(0);
+		List<SysPrivilege> privileges = sysRole0.getPrivilegeList();
+		System.out.println("roleName:"+sysRole0.getRoleName()+"|| privileges size="+sysRole0.getPrivilegeList().size());
+	}
+@Test
+	void test47(){
+		List<SysRole> roleList = userMapper.selectRoleListByUserId2(1L);
+		System.out.println(roleList.size());
+
+		System.out.println("privilegeList："+roleList.get(0).getPrivilegeList());
+		System.out.println("privilegeList:"+roleList.get(1).getPrivilegeList());
+//		System.out.println("privilegeList:"+roleList.get(2).getPrivilegeList());
+	}
+
+	/**
+	 * 调用存储过程。 返回一条结果。
+	 */
+	@Test
+	void test51(){
+	SysUser sysUser = new SysUser();
+	sysUser.setId(1L);
+	 userMapper.selectUserInfoById(sysUser);
+		System.out.println(sysUser.getUserName()+"||" + sysUser.getUserEmail());
+	}
+
+	/**
+	 * 调用存储过程， 返回结果集，失败。
+	 */
+	@Test
+	void test52(){
+	Map<String,Object> param = new HashMap<>();
+	param.put("userName","admin");
+	param.put("_offset",1);
+	param.put("_limit",10);
 
 
+	List<SysUser> sysUserList = userMapper.selectUserPage(param);
+		System.out.println("total:"+param.get("total"));
+		System.out.println("size:"+sysUserList.size());
+//		System.out.println("size:"+sysUserList.size()+"||username0="+sysUserList.get(0).getUserName());
+	}
 
 
 

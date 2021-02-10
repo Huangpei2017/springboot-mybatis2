@@ -408,5 +408,89 @@
        inner join sys_role_privilege rp on r.id = rp.role_id
        inner join sys_privilege p on rp.privilege_id = p.id
     </select>
+    <select id="selectAllUserAndRoles3" resultMap="userAndRoleListMap3">
+        select u.id,
+                u.user_name,
+                u.user_password,
+                u.user_email
+        from sys_user u
+
+    </select>
+    <select id="selectRoleListByUserId" resultMap="roleAndPrivilegeMap3">
+        select r.id,
+                r.role_name,
+                r.enabled,
+                r.create_by,
+                r.create_time
+        from sys_role r
+        inner join sys_user_role ur on r.id = ur.role_id
+        where ur.user_id = #{userId}
+    </select>
+    <select id="selectPrivilegeListByRoleId" resultMap="privilegeMap">
+        select p.id,
+                p.privilege_name,
+                p.privilege_url
+        from sys_privilege p
+        inner join sys_role_privilege rp on p.id = rp.privilege_id
+        where rp.role_id =#{roleId}
+    </select>
+    <resultMap id="userAndRoleListMap3" type="com.example.springbootmybatis2.model.SysUser" extends="userMap">
+        <collection property="roleList" fetchType="lazy"  select="com.example.springbootmybatis2.mapper.UserMapper.selectRoleListByUserId"
+                column="{userId = id}" >
+
+        </collection>
+    </resultMap>
+    <resultMap id="roleAndPrivilegeMap3" type="com.example.springbootmybatis2.model.SysRole" extends="roleMap">
+        <collection property="privilegeList" fetchType="lazy" select="com.example.springbootmybatis2.mapper.UserMapper.selectPrivilegeListByRoleId"
+                    column="{roleId=id}">
+
+        </collection>
+
+    </resultMap>
+    <select id="selectRoleListByUserId2" resultMap="roleAndPrivilegeMapChoose">
+        select r.id,
+                r.role_name,
+                r.enabled,
+                r.create_by,
+                r.create_time
+        from sys_role r
+        inner join sys_user_role ur on r.id = ur.role_id
+        where ur.user_id = #{userId}
+    </select>
+    <resultMap id="roleAndPrivilegeMapChoose" type="com.example.springbootmybatis2.model.SysRole">
+        <discriminator javaType="int" column="enabled">
+            <case value="1" resultMap="roleAndPrivilegeMap3">
+            </case>
+            <case value="0" resultMap="roleMap">
+            </case>
+        </discriminator>
+    </resultMap>
+    
+    <select id="selectUserInfoById" useCache="false" statementType="CALLABLE"
+            parameterType="com.example.springbootmybatis2.model.SysUser">
+        {call select_user_by_id(
+            #{id, mode=IN,jdbcType=BIGINT},
+            #{userName,mode=OUT,jdbcType=VARCHAR,javaType=String},
+            #{userPassword,mode=OUT,jdbcType=VARCHAR},
+            #{userEmail,mode=OUT,jdbcType=VARCHAR},
+            #{userInfo,mode=OUT,jdbcType=VARCHAR},
+            #{headImg,mode=OUT,jdbcType=BLOB,javaType=_byte[]},
+            #{createTime,mode=OUT,jdbcType=TIMESTAMP,javaType=Date}
+        )
+        }
+    </select>
+    
+    
+    <select id="selectUserPage" useCache="false" statementType="CALLABLE" resultMap="userMap" >
+        {
+         call select_user_page(
+            #{userName, mode=IN, jdbcType=VARCHAR},
+            #{_offset,mode=IN, jdbcType=BIGINT},
+            #{_limit,mode=IN,jdbcType=BIGINT},
+            #{total,mode=OUT,jdbcType=BIGINT,javaType=int}
+         )
+        }
+    </select>
+
 
 </mapper>
