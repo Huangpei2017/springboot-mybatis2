@@ -1,20 +1,31 @@
 package com.example.springbootmybatis2;
 
 import com.example.springbootmybatis2.mapper.CountryMapper;
+import com.example.springbootmybatis2.mapper.RoleMapper;
 import com.example.springbootmybatis2.mapper.UserMapper;
 import com.example.springbootmybatis2.mapper.UserMapper2;
 import com.example.springbootmybatis2.model.SysPrivilege;
 import com.example.springbootmybatis2.model.SysRole;
 import com.example.springbootmybatis2.model.SysUser;
+import org.apache.catalina.User;
+import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.apache.tomcat.util.security.MD5Encoder;
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
+import org.mybatis.spring.SqlSessionFactoryBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.util.Assert;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.test.annotation.Rollback;
 import sun.security.provider.MD5;
 
 import javax.annotation.Resource;
+import javax.sql.DataSource;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.*;
 
 @SpringBootTest
@@ -22,14 +33,27 @@ class SpringbootMybatis2ApplicationTests {
 	@Resource
 	CountryMapper countryMapper;
 	@Resource
+	RoleMapper roleMapper;
+	@Resource
 	UserMapper userMapper;
 	@Resource
 	UserMapper2 userMapper2;
+	@Autowired
+	DataSource dataSource;
 
 	private static SqlSessionFactory sqlSessionFactory;
 
+	private SqlSessionFactory getsqlSessionFactory() throws Exception {
+		final SqlSessionFactoryBean sqlSessionFactoryBean = new SqlSessionFactoryBean();
+		sqlSessionFactoryBean.setDataSource(dataSource);
+		sqlSessionFactoryBean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources("classpath:xml/*.xml"));
+		SqlSessionFactory sqlSessionFactory = (SqlSessionFactory)sqlSessionFactoryBean.getObject();
+		return sqlSessionFactory;
+	}
+
 	@Test
 	void contextLoads() {
+
 	}
 
 	@Test
@@ -440,6 +464,123 @@ class SpringbootMybatis2ApplicationTests {
 		System.out.println("total:"+param.get("total"));
 		System.out.println("size:"+sysUserList.size());
 //		System.out.println("size:"+sysUserList.size()+"||username0="+sysUserList.get(0).getUserName());
+	}
+
+	/**
+	 * mybatis 缓存
+	 */
+@Test
+	void test61(){
+		List<SysRole> sysRoleList = userMapper.selectRolesByUserId2(1L);
+		System.out.println(sysRoleList.size());
+//		sysRoleList.remove(0);
+
+		List<SysRole> sysRoleList2 = userMapper.selectRolesByUserId2(1L);
+//	Assert.assertEquals(sysRoleList.size(),sysRoleList2.size());
+		System.out.println(sysRoleList2.size());
+	}
+
+	/**
+	 * mybatis 一级缓存。 注入的userMapper.selectUserById每次会调用新的sqlSession来查询。
+	 * userMapper
+	 */
+	@Test
+	void test62(){
+	 SysUser sysUser = userMapper.selectUserById(1L);
+		System.out.println(sysUser.getUserName());
+		sysUser.setUserName("Jim");
+		//此处 是不相同？？？
+		SysUser sysUser2 = userMapper.selectUserById(1L);
+		Assert.assertEquals(sysUser,sysUser2);
+//		Assert.assertEquals("Jim",sysUser2.getUserName());
+	}
+
+	/**
+	 * mybatis 一级缓存，sqlSession 返回同一个实例。 一级只存在于同一个SqlSession
+	 * 一级原理：
+	 * @throws Exception
+	 */
+	@Test
+	void test63() throws Exception {
+		//sqlSessionFactory
+		SqlSessionFactory sqlSessionFactory = getsqlSessionFactory();
+		SqlSession sqlSession = sqlSessionFactory.openSession();
+		UserMapper userMapperTemplete = sqlSession.getMapper(UserMapper.class);
+		SysUser sysUser = userMapperTemplete.selectUserById(1L);
+		System.out.println(sysUser.getUserName());
+		sysUser.setUserName("Jim");
+		//此处 是不相同？？
+		SysUser sysUser2 = userMapperTemplete.selectUserById(1L);
+		Assert.assertEquals(sysUser,sysUser2);
+		Assert.assertEquals("Jim",sysUser2.getUserName());
+	}
+
+	/**
+	 * 二级缓存的时候. 二级缓存只存在于SqlSessionFactory 生命周期，同时需要  sqlSession.close(); 后生效。
+	 * 原理：。。。。
+	 * @throws Exception
+	 */
+	@Test
+	void test64() throws  Exception{
+		//sqlSessionFactory
+		SqlSessionFactory sqlSessionFactory = getsqlSessionFactory();
+		SqlSession sqlSession = sqlSessionFactory.openSession();
+		UserMapper userMapperTemplete = sqlSession.getMapper(UserMapper.class);
+		SysUser sysUser =userMapperTemplete.selectUserById2(1L);
+		sqlSession.close();
+
+		SqlSession sqlSession1 =sqlSessionFactory.openSession();
+		UserMapper userMapperTemplete1 = sqlSession1.getMapper(UserMapper.class);
+		SysUser sysUser1 =userMapperTemplete1.selectUserById2(1L);
+		 Assert.assertEquals(sysUser,sysUser1);
+//		Assert.assertEquals("Jim",sysUser1.getUserName());
+
+	}
+
+	/**
+	 * mybatis 一级缓存，二级缓存关系。
+	 * @throws Exception
+	 */
+	@Test
+	void test66() throws  Exception{
+
+		//sqlSessionFactory
+		SqlSessionFactory sqlSessionFactory = getsqlSessionFactory();
+		SqlSession sqlSession = sqlSessionFactory.openSession();
+		UserMapper userMapperTemplete = sqlSession.getMapper(UserMapper.class);
+		SysUser sysUser =userMapperTemplete.selectUserById2(1L);
+//		此处二级缓存生效，一级缓存不会被失效仍然生效。
+		UserMapper userMapperTemplete1= sqlSession.getMapper(UserMapper.class);
+		SysUser sysUser1 = userMapperTemplete1.selectUserById2(1L);
+		Assert.assertEquals(sysUser,sysUser1);
+
+
+	}
+
+	/**
+	 * 参照清理缓存。避免脏数据
+	 *
+	 */
+	@Test
+	void test67(){
+		List<SysUser> sysUserList =userMapper.selectUserAndRoleById(1L);
+		for(SysUser sysUser: sysUserList){
+
+				System.out.println("role id="+sysUser.getRole().getId()+"||"+sysUser.getRole().getRoleName());
+
+		}
+
+		SysRole role =roleMapper.selectRoleById(2L);
+		role.setRoleName("脏数据");
+		roleMapper.updateRoleById(role);
+
+		List<SysUser> sysUserList2 =userMapper.selectUserAndRoleById(1L);
+		for(SysUser sysUser: sysUserList2){
+			if(sysUser.getRole().getId().equals(2L)){
+				System.out.println("role id=2||"+sysUser.getRole().getRoleName());
+				Assert.assertNotEquals("脏数据",sysUser.getRole().getRoleName());
+			}
+		}
 	}
 
 

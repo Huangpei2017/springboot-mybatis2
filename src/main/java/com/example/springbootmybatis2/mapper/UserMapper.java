@@ -5,10 +5,16 @@ import com.example.springbootmybatis2.model.SysPrivilege;
 import com.example.springbootmybatis2.model.SysRole;
 import com.example.springbootmybatis2.model.SysUser;
 import org.apache.ibatis.annotations.*;
+import org.apache.ibatis.cache.decorators.FifoCache;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.util.List;
 import java.util.Map;
 
+/*@CacheNamespace(
+		eviction = FifoCache.class,
+		readWrite = true
+)*/
 @Mapper
 public interface UserMapper {
 	
@@ -176,5 +182,31 @@ public interface UserMapper {
 	void selectUserInfoById(SysUser sysUser);
 
 	List<SysUser>  selectUserPage(Map<String,Object> paramMap);
+
+
+	/**
+	 * mybatis 缓存
+	 * @param id
+	 * @return
+	 */
+	List<SysRole> selectRolesByUserId2(Long id);
+
+	/**
+	 * mybatis 一级缓存。
+	 * @param id
+	 * @return
+	 */
+	 SysUser selectUserById(Long id);
+
+	/**
+	 * mybatis 二级缓存。
+	 * @param id
+	 * @return
+	 */
+	SysUser selectUserById2(Long id);
+
+	/**
+	 * 参照缓存
+	 */
 
 }
