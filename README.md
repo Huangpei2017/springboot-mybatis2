@@ -29,5 +29,11 @@ delete使用。
 
 5, 动态sql书写。
 
+6,mybatis 一对一关系查询实现
+a，嵌套对象实现
+b，resultMap实现
+c，resultMap 延迟加载实现。
+7，mybatis 一对多关系查询实现
+
 
 

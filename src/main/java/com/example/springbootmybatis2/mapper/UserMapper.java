@@ -116,4 +116,38 @@ public interface UserMapper {
 
 	List<SysUser> selectByUser2(SysUser sysUser);
 
+
+	/**
+	 * 一对一查询, 使用嵌套对象， resultType实现
+	 */
+	List<SysUser>  selectUserAndRoleById(Long id);
+
+	/**
+	 * 使用嵌套对象 ，resultMap实现
+	 * @param id
+	 * @return
+	 */
+	List<SysUser>  selectUserAndRoleById2(Long id);
+
+	/**
+	 * 一对一映射结果集查询，使用resultMap和延迟查询实现
+	 * @param id
+	 * @return
+	 */
+	List<SysUser> selectUserAndRoleByIdSelect(Long id);
+	SysRole selectSysRoleByRoleId(Long roleId);
+
+	/**
+	 * 使用resultMap实现一对多映射结果集查询。 合并数据。
+	 * @return
+	 */
+	List<SysUser> selectAllUserAndRoles();
+
+	/**
+	 * 使用resultMap 实现一对多 再对多 的三重映射结果集查询。合并数据。
+	 * @return
+	 */
+	List<SysUser> selectAllUserAndRoles2();
+
+
 }

@@ -13,51 +13,59 @@
         <result property="headImg" column="head_img" jdbcType="BLOB"/>
         <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
     </resultMap>
-
-    <!--	<resultMap id="userRoleMap" extends="userMap" type="com.example.springbootmybatis2.model.SysUser">-->
-    <!--		<association property="role" columnPrefix="role_" resultMap="tk.mybatis.simple.mapper.RoleMapper.roleMap"/>-->
-    <!--	</resultMap>-->
-
-    <resultMap id="userRoleMapSelect" extends="userMap" type="com.example.springbootmybatis2.model.SysUser">
-        <association property="role"
-                     fetchType="lazy"
-                     select="tk.mybatis.simple.mapper.RoleMapper.selectRoleById"
-                     column="{id=role_id}"/>
+    <resultMap id="userRoleMap2" type="com.example.springbootmybatis2.model.SysUser" extends="userMap">
+        <association property="role" columnPrefix="role_" javaType="com.example.springbootmybatis2.model.SysRole">
+            <result property="id" column="id" />
+            <result property="roleName" column="role_name"/>
+            <result property="enabled" column="enabled" />
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="createBy" column="create_by" jdbcType="VARCHAR"/>
+        </association>
     </resultMap>
 
-    <!--
-    <resultMap id="userRoleListMap" extends="userMap" type="com.example.springbootmybatis2.model.SysUser">
-        <id property="id" column="id"/>
-        <result property="userName" column="user_name"/>
-        <result property="userPassword" column="user_password"/>
-        <result property="userEmail" column="user_email"/>
-        <result property="userInfo" column="user_info"/>
-        <result property="headImg" column="head_img" jdbcType="BLOB"/>
-        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
-        <collection property="roleList" columnPrefix="role_" javaType="com.example.springbootmybatis2.model.SysRole">
-            <id property="id" column="id"/>
-            <result property="roleName" column="role_name"/>
-            <result property="enabled" column="enabled"/>
+    <resultMap id="userAndRoleSelectMap" type="com.example.springbootmybatis2.model.SysUser" extends="userMap">
+        <association property="role" javaType="com.example.springbootmybatis2.model.SysRole"
+                     fetchType="lazy" select="com.example.springbootmybatis2.mapper.UserMapper.selectSysRoleByRoleId"
+                     column="{roleId = role_id}">
+
+        </association>
+
+    </resultMap>
+
+    <resultMap id="roleMap" type="com.example.springbootmybatis2.model.SysRole">
+        <result property="id" column="id" />
+        <result property="roleName" column="role_name"/>
+        <result property="enabled" column="enabled"/>
+        <association property="createInfo" javaType="com.example.springbootmybatis2.model.CreateInfo">
             <result property="createBy" column="create_by"/>
             <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        </association>
+     </resultMap>
+
+    <resultMap id="userAndRoleListMap" type="com.example.springbootmybatis2.model.SysUser" extends="userMap">
+        <collection property="roleList" columnPrefix="role_" resultMap="roleMap">
+
+        </collection>
+     </resultMap>
+    <resultMap id="userAndRoleListMap2" type="com.example.springbootmybatis2.model.SysUser" extends="userMap">
+        <collection property="roleList" columnPrefix="role_" resultMap="roleAndPrivilegeMap">
+
         </collection>
     </resultMap>
-     -->
+    <resultMap id="roleAndPrivilegeMap" type="com.example.springbootmybatis2.model.SysRole" extends="roleMap">
+        <collection property="privilegeList" columnPrefix="privilege_" resultMap="privilegeMap">
 
-    <!--	<resultMap id="userRoleListMap" extends="userMap" type="com.example.springbootmybatis2.model.SysUser">-->
-    <!--		<collection property="roleList" columnPrefix="role_" -->
-    <!--					resultMap="tk.mybatis.simple.mapper.RoleMapper.rolePrivilegeListMap"/>-->
-    <!--	</resultMap>-->
-
-    <resultMap id="userRoleListMapSelect" extends="userMap" type="com.example.springbootmybatis2.model.SysUser">
-        <collection property="roleList"
-                    fetchType="lazy"
-                    select="tk.mybatis.simple.mapper.RoleMapper.selectRoleByUserId"
-                    column="{userId=id}"/>
+        </collection>
+    </resultMap>
+    <resultMap id="privilegeMap" type="com.example.springbootmybatis2.model.SysPrivilege">
+        <result property="id" column="id" />
+        <result property="privilegeName" column="privilege_name" jdbcType="VARCHAR"/>
+        <result property="privilegeUrl" column="privilege_url"/>
     </resultMap>
 
 
-    <select id="selectAll" resultType="com.example.springbootmybatis2.model.SysUser">
+
+    <select id="selectAll" resultMap="userMap">
 	    select id, 
 	    	user_name userName, 
 	        user_password userPassword,
@@ -321,17 +329,84 @@
 
     </select>
 
-    <!--
-    需求：{现在进行如下查询：当 参数 id 有值 的时候优 先使id 查询，
-    当 id 没有值时就去判断用户名是否有值，如果有值就用用户名 查询 ，如果用 户名
-    也没有值，就使 查询无结果。}
-    如何实现if else 。 if .. else ..的逻辑。
-    使用choose：注意
-    1，choose 至少有一个when，可以没有otherwhise
-    2，    where 1 = 1 注意添加，当所有choose 条件条件不满足时 where 1=1，sql正确。
-    3，otherwise添加 limit 0或者
-    and 1 = 2 。当所有choose 条件不满足时就 不查出结果。
-    如果不添加otherwhise 会出现查出所有结果
-    -->
+    <select id="selectUserAndRoleById" resultType="com.example.springbootmybatis2.model.SysUser">
+        select  u.id,
+                u.user_name userName,
+                u.user_email userEmail,
+                r.role_name "role.roleName",
+                r.enabled "role.enabled"
+        from sys_user u
+       inner join sys_user_role ur on u.id = ur.user_id
+       inner join sys_role r on ur.role_id = r.id
+       where u.id = #{id}
+
+    </select>
+
+    <select id="selectUserAndRoleById2" resultMap="userRoleMap2">
+        select  u.id,
+                u.user_name ,
+                u.user_email ,
+                r.role_name role_role_name,
+                r.enabled role_enabled
+        from sys_user u
+       inner join sys_user_role ur on u.id = ur.user_id
+       inner join sys_role r on ur.role_id = r.id
+       where u.id = #{id}
+
+    </select>
+    <select id="selectUserAndRoleByIdSelect" resultMap="userAndRoleSelectMap">
+        select u.id,
+                u.user_name,
+                u.user_email,
+                ur.role_id
+        from sys_user u
+        inner join sys_user_role ur on u.id = ur.user_id
+        where u.id =#{id}
+    </select>
+
+    <select id="selectSysRoleByRoleId" resultMap="roleMap">
+        select r.id,
+                r.role_name,
+                r.enabled,
+                r.create_by,
+                r.create_time
+        from sys_role r
+        where r.id =#{roleId}
+    </select>
+
+    <select id="selectAllUserAndRoles" resultMap="userAndRoleListMap">
+        select u.id,
+                u.user_name,
+                u.user_password,
+                u.user_email,
+                r.id role_id,
+                r.role_name role_role_name,
+                r.enabled role_enabled,
+                r.create_by role_create_by,
+                r.create_time role_create_time
+        from sys_user u
+       inner join sys_user_role ur on u.id = ur.user_id
+       inner join sys_role r on ur.role_id = r.id
+    </select>
+
+    <select id="selectAllUserAndRoles2" resultMap="userAndRoleListMap2">
+        select u.id,
+                u.user_name,
+                u.user_password,
+                u.user_email,
+                r.id role_id,
+                r.role_name role_role_name,
+                r.enabled role_enabled,
+                r.create_by  role_create_by,
+                r.create_time role_create_time,
+                p.id role_privilege_id,
+                p.privilege_name  role_privilege_privilege_name,
+                p.privilege_url role_privilege_privilege_url
+        from sys_user u
+       inner join sys_user_role ur on u.id = ur.user_id
+       inner join sys_role r on ur.role_id = r.id
+       inner join sys_role_privilege rp on r.id = rp.role_id
+       inner join sys_privilege p on rp.privilege_id = p.id
+    </select>
 
 </mapper>

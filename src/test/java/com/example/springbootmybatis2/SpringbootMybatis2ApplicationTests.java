@@ -3,6 +3,7 @@ package com.example.springbootmybatis2;
 import com.example.springbootmybatis2.mapper.CountryMapper;
 import com.example.springbootmybatis2.mapper.UserMapper;
 import com.example.springbootmybatis2.mapper.UserMapper2;
+import com.example.springbootmybatis2.model.SysPrivilege;
 import com.example.springbootmybatis2.model.SysRole;
 import com.example.springbootmybatis2.model.SysUser;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -33,7 +34,8 @@ class SpringbootMybatis2ApplicationTests {
 
 	@Test
 	void test1(){
-		countryMapper.selectAll();
+//		countryMapper.selectAll();
+		userMapper.selectAll();
 	}
 
 	@Test
@@ -326,6 +328,71 @@ class SpringbootMybatis2ApplicationTests {
 		List<SysUser> sysUserList =userMapper.selectByUser2(sysUser);
 		System.out.println(sysUserList.size());
 	}
+	/***
+	 *  review for working
+	  * 一一映射
+	 * @author Charles
+	 * @date 2021/2/9 15:10
+	 * @return void
+	 */
+@Test
+	void test41(){
+
+		List<SysUser> sysUsers =userMapper.selectUserAndRoleById(1L);
+		System.out.println(sysUsers.size());
+	System.out.println(sysUsers.get(0).getRole().getRoleName()+"||"+sysUsers.get(0).getRole().getEnabled());
+	}
+
+	/**
+	 * 一一映射  使用嵌套对象 ，resultMap实现
+	 */
+	@Test
+	void test42(){
+		List<SysUser> sysUsers = userMapper.selectUserAndRoleById2(1L);
+		System.out.println(sysUsers.get(0).getRole().getRoleName() +"||"+ sysUsers.get(0).getRole().getEnabled());
+	}
+
+	/**
+	 * 一一映射 ，使用resultMap 延迟加载实现。
+	 */
+	@Test
+	void test43(){
+
+		List<SysUser> sysUserList = userMapper.selectUserAndRoleByIdSelect(1L);
+		System.out.println(sysUserList.size());
+		SysRole sysRole = sysUserList.get(0).getRole();
+		System.out.println(sysRole.getRoleName()+"||"+ sysRole.getEnabled());
+
+	SysRole sysRole2 = sysUserList.get(1).getRole();
+	System.out.println(sysRole2.getRoleName()+"||"+ sysRole2.getEnabled()+"||"+sysRole2.getCreateInfo().getCreateBy()+"||"+sysRole2.getCreateInfo().getCreateTime());
+
+	}
+
+	/**
+	 * 一对多结果，使用resultMap实现。合并子结果集
+	 */
+	@Test
+	void test44(){
+		List<SysUser> sysUserList = userMapper.selectAllUserAndRoles();
+		System.out.println(sysUserList.size());
+		System.out.println(sysUserList.get(0).getRoleList().size());
+	}
+
+	/**
+	 * 使用resultMap 实现一对多 再对多 的三重映射结果集查询。合并数据
+	 */
+	@Test
+	void test45(){
+		List<SysUser> sysUserList = userMapper.selectAllUserAndRoles2();
+		System.out.println(sysUserList.size());
+		List<SysRole> sysRoleList = sysUserList.get(0).getRoleList();
+		System.out.println(sysRoleList.size());
+		List<SysPrivilege> sysPrivilegeList = sysRoleList.get(1).getPrivilegeList();
+		System.out.println(sysPrivilegeList.size());
+	}
+
+
+
 
 
 
